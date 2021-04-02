@@ -27,6 +27,7 @@ namespace EtlDTM
             string errorMessage = "";
             try
             {
+                int moneda = 0;
                 int contador = 0;
                 DataApi result = new DataApi();
                 string dateFormatted = string.Empty ;
