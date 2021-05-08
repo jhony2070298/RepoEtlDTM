@@ -2,25 +2,17 @@
 using RestSharp;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web.Services.Description;
-using System.Data.SqlClient;
-
-using System.Data;
-using Nancy.Json;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Net;
 
 namespace EtlDTM
 {
-    class Program
+    class PruebaApiMaquina
     {
-        static void Main(string[] args) 
+        public void Main()
         {
             try
             {
@@ -66,7 +58,7 @@ namespace EtlDTM
                     Token deserializedJson = JsonConvert.DeserializeObject<Token>(response.Content);
                     string token = deserializedJson.access_token;
                     RankingOperacion driver_Machine = new RankingOperacion();
-
+                   
                     // se consume la tercera Api(Ranking de operación de máquina)
                     while (flat == true)
                     {
@@ -91,7 +83,6 @@ namespace EtlDTM
                             List<RankingOperacion> listJsonMachine = JsonConvert.DeserializeObject<List<RankingOperacion>>(responseGetMachine.Content);
                             driver_Machine.LoadFlatFile(flatFileMachine, listJsonMachine);
                             contador = contador + 1;
-                            flat = false;
                         }
                         else if (responseGetMachine.StatusCode == HttpStatusCode.BadRequest)
                         {
@@ -131,24 +122,22 @@ namespace EtlDTM
                 if (ex.ToString().Length > 400)
                 {
                     var mesagge = ex.ToString().Replace("'", "").Replace("\"", "").Substring(0, 400);
-
+                   
                 }
                 else
                 {
                     var mesagge = ex.ToString().Replace("'", "").Replace("\"", "");
-
+                    
                 }
             }
-
-
+          
         }
-
         class Token
         {
             public string access_token { get; set; }
             public string token_type { get; set; }
             public string expires_in { get; set; }
-
+                                        
             public IRestResponse GetToken(string url, string accept, string contentType, string username, string password, string grantType)
             {
                 var client = new RestClient(url);
@@ -232,16 +221,15 @@ namespace EtlDTM
                 requestGet.AddHeader("Accept-Encoding", accept_Encoding);
                 //requestGet.AddParameter("startDate", starDate.ToString("s").Replace("T", " "));
                 //requestGet.AddParameter("endDate", endDate.ToString("s").Replace("T", " "));
-                requestGet.AddParameter("startDate", "2021-03-01 00:00:00");
-                requestGet.AddParameter("endDate", "2021-03-01 23:59:59");
+                requestGet.AddParameter("startDate", "2021-05-07 00:00:00");
+                requestGet.AddParameter("endDate", "2021-05-07 23:59:59");
                 IRestResponse responseGet = clientGet.Execute(requestGet);
                 return responseGet;
             }
-
             public void LoadFlatFile(string flatFilePath, List<RankingOperacion> listJsonDriverMachine)
             {
 
-                string placa = "CO_TDZ195";
+                string placa = "CO_GDX195";
                 using (StreamWriter file = File.AppendText(flatFilePath))
                 {
                     if (flatFilePath == "C:\\TDM_Pruebas\\TDM_Prueba1.txt")
@@ -250,27 +238,20 @@ namespace EtlDTM
                         {
                             if (dataApi.MachineName == placa)
                             {
-                                var liter = dataApi.Liters;   
+                                var liter = Convert.ToInt32(dataApi.Liters.ToString().Replace(",", "."));
                                 var galones = liter / 3.7854;
-                                var dataComplet = dataApi.RankingDate + ";" + dataApi.MachineName + ";"+ liter + ";" + galones;
+
+                                var dataComplet = liter + ";" + galones;
                                 file.WriteLine(dataComplet);
                             }
-
+                            
                         }
 
                     }
-
+                   
                 }
             }
         }
-    }  
+
+    }
 }
-   
-   
-    
-   
-    
-
-
-
-
